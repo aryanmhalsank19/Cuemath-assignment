@@ -5,11 +5,14 @@ import { useState } from 'react';
 export default function Home() {
   const [candidateName, setCandidateName] = useState('');
   const [isStarting, setIsStarting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleStart = async () => {
     if (!candidateName.trim()) return;
     
     setIsStarting(true);
+    setError(null);
+    
     try {
       const response = await fetch('/api/session', {
         method: 'POST',
@@ -17,12 +20,17 @@ export default function Home() {
         body: JSON.stringify({ candidateName: candidateName.trim() }),
       });
 
-      if (!response.ok) throw new Error('Failed to create session');
+      const data = await response.json();
 
-      const session = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create session');
+      }
+
+      const session = data;
       window.location.href = `/interview?sessionId=${session.id}`;
-    } catch (error) {
-      console.error('Error starting interview:', error);
+    } catch (err) {
+      console.error('Error starting interview:', err);
+      setError(err instanceof Error ? err.message : 'Failed to start interview');
       setIsStarting(false);
     }
   };
@@ -49,6 +57,12 @@ export default function Home() {
             <li>• Speak naturally - just like a real interview</li>
           </ul>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+        )}
 
         <div className="mb-6">
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">

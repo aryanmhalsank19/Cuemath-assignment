@@ -85,7 +85,7 @@ git push -u origin main
    - `GOOGLE_AI_API_KEY` - Your Google AI API key from Google AI Studio
 5. Deploy
 
-**Note**: The application uses file-based session storage (`.sessions.json`). For production, consider using a database like Redis or PostgreSQL for session persistence across multiple server instances.
+**Note**: The application uses in-memory session storage for Vercel serverless compatibility. Sessions are lost when the serverless function cold restarts. For production with persistent sessions, consider using Vercel KV, Redis, or PostgreSQL.
 
 ## Project Structure
 
