@@ -1,65 +1,83 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
 
 export default function Home() {
+  const [candidateName, setCandidateName] = useState('');
+  const [isStarting, setIsStarting] = useState(false);
+
+  const handleStart = async () => {
+    if (!candidateName.trim()) return;
+    
+    setIsStarting(true);
+    try {
+      const response = await fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ candidateName: candidateName.trim() }),
+      });
+
+      if (!response.ok) throw new Error('Failed to create session');
+
+      const session = await response.json();
+      window.location.href = `/interview?sessionId=${session.id}`;
+    } catch (error) {
+      console.error('Error starting interview:', error);
+      setIsStarting(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex flex-col items-center justify-center p-4">
+      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8 md:p-12">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">
+            Cuemath <span className="text-orange-500">AI Tutor Screener</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-gray-600">
+            Your AI-powered voice interview experience
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="bg-orange-50 rounded-lg p-6 mb-8">
+          <h2 className="font-semibold text-gray-800 mb-3">What to expect:</h2>
+          <ul className="text-sm text-gray-600 space-y-2">
+            <li>• A relaxed 10-minute voice conversation</li>
+            <li>• Questions about your teaching experience and style</li>
+            <li>• Situational scenarios to assess your approach</li>
+            <li>• Instant feedback on your performance</li>
+            <li>• Speak naturally - just like a real interview</li>
+          </ul>
         </div>
-      </main>
+
+        <div className="mb-6">
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+            Your Name
+          </label>
+          <input
+            id="name"
+            type="text"
+            value={candidateName}
+            onChange={(e) => setCandidateName(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleStart()}
+            placeholder="Enter your full name"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition"
+            disabled={isStarting}
+          />
+        </div>
+
+        <button
+          onClick={handleStart}
+          disabled={!candidateName.trim() || isStarting}
+          className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        >
+          {isStarting ? 'Starting...' : 'Start Interview'}
+        </button>
+
+        <p className="text-xs text-gray-500 text-center mt-4">
+          Make sure you have a working microphone and are in a quiet environment
+        </p>
+      </div>
     </div>
   );
 }
